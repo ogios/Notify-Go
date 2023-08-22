@@ -64,10 +64,21 @@ func (s *TCPServer) loopAccept() {
 	for {
 		conn, err := s.Listener.Accept()
 		if err != nil {
+			fmt.Printf("!!!Connection Accept Error: %s", err)
 			s.QuitChan <- struct{}{}
-			return
+			panic(err)
 		}
 		fmt.Println(conn.RemoteAddr())
-		conn.Close()
+		go readBuf(conn)
+	}
+}
+
+func readBuf(conn net.Conn) {
+	defer conn.Close()
+	buf := make([]byte, 2048)
+	read, err := conn.Read(buf)
+	if err != nil {
+		fmt.Printf("!!!ReadBuf Error: %s", err)
+		return
 	}
 }
