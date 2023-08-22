@@ -1,0 +1,3 @@
+server:
+  network: "tcp"
+  address: ":9977"
