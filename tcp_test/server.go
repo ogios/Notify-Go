@@ -54,6 +54,20 @@ func (s *TCPServer) Start() error {
 	}
 	defer ln.Close()
 	s.Listener = ln
+
+	go s.loopAccept()
 	<-s.QuitChan
 	return nil
+}
+
+func (s *TCPServer) loopAccept() {
+	for {
+		conn, err := s.Listener.Accept()
+		if err != nil {
+			s.QuitChan <- struct{}{}
+			return
+		}
+		fmt.Println(conn.RemoteAddr())
+		conn.Close()
+	}
 }
