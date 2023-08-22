@@ -19,15 +19,15 @@ type Config struct {
 var YMLConfig Config = Config{}
 
 func UnmarshalConfig() {
-	// 读取文件
+	// read file
 	path, _ := os.Getwd()
 	ymlb, err := os.ReadFile(path + "/config.yml")
 	if err != nil {
 		panic(err)
 	}
 
-	// 解集
-	fmt.Println("Unmarshal...")
+	// Unmarshal
+	fmt.Println("Unmarshaling...")
 	err = yaml.Unmarshal(ymlb, &YMLConfig)
 	if err != nil {
 		panic(err)
@@ -37,34 +37,51 @@ func UnmarshalConfig() {
 }
 
 func getFieldByTag(s interface{}, tag string) (interface{}, error) {
+	// Get Value under interface
 	v := reflect.ValueOf(s)
 	fmt.Println(v)
+
+	// Transform pointer to value
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
 
+	// Check if type is struct
 	if v.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("expect struct")
 	}
 
+	// Get Value type to match tag
 	typeField := v.Type()
 
+	// Split Tags
 	tags := strings.Split(tag, ".")
 	fmt.Println(tags)
+
+	// go through fields
 	for i := 0; i < typeField.NumField(); i++ {
+
+		// get one field's type
 		f := typeField.Field(i)
 		fmt.Println("inner - ", f)
 
+		// match tag
 		if f.Tag.Get("yaml") == tags[0] {
 			if len(tags) > 1 {
+
+				// match fields under current field
 				fmt.Println("next")
 				return getFieldByTag(v.Field(i).Interface(), strings.Join(tags[1:], "."))
 			} else {
+
+				// return field if there's no tags left
 				fmt.Println("gotten")
 				return v.Field(i).Interface(), nil
 			}
 		}
 	}
+
+	// return nil if not match
 	return nil, fmt.Errorf("field %s not found", strings.Join(tags[0:], "."))
 }
 
