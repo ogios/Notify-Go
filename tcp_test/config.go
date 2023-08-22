@@ -39,7 +39,7 @@ func UnmarshalConfig() {
 func getFieldByTag(s interface{}, tag string) (interface{}, error) {
 	// Get Value under interface
 	v := reflect.ValueOf(s)
-	fmt.Println(v)
+	// fmt.Println(v)
 
 	// Transform pointer to value
 	if v.Kind() == reflect.Ptr {
@@ -56,21 +56,20 @@ func getFieldByTag(s interface{}, tag string) (interface{}, error) {
 
 	// Split Tags
 	tags := strings.Split(tag, ".")
-	fmt.Println(tags)
+	// fmt.Println(tags)
 
 	// go through fields
 	for i := 0; i < typeField.NumField(); i++ {
 
 		// get one field's type
 		f := typeField.Field(i)
-		fmt.Println("inner - ", f)
+		// fmt.Println("inner - ", f)
 
 		// match tag
 		if f.Tag.Get("yaml") == tags[0] {
 			if len(tags) > 1 {
-
 				// match fields under current field
-				fmt.Println("next")
+				// fmt.Println("next")
 				return getFieldByTag(v.Field(i).Interface(), strings.Join(tags[1:], "."))
 			} else {
 

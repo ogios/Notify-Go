@@ -3,9 +3,8 @@ package tcpt_test
 import (
 	"fmt"
 	"net"
-	// "os"
-	//
-	// "gopkg.in/yaml.v3"
+
+	"github.com/jinzhu/copier"
 )
 
 type (
@@ -23,9 +22,14 @@ type TCPServer struct {
 }
 
 func DefaultServer() (*TCPServer, error) {
-	// opt :=
+	server_config, err := GetConfig("server")
+	if err != nil {
+		panic(err)
+	}
+	opt := TCPOpt{}
+	copier.Copy(&opt, server_config)
 	return &TCPServer{
-		// TCPOpt:   opt,
+		TCPOpt:   opt,
 		QuitChan: make(chan struct{}),
 	}, nil
 }

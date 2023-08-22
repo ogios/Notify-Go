@@ -2,4 +2,7 @@ module gosocket
 
 go 1.20
 
-require gopkg.in/yaml.v3 v3.0.1 // indirect
+require (
+	github.com/jinzhu/copier v0.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
