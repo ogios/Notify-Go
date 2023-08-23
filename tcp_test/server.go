@@ -1,11 +1,16 @@
-package tcpt_test
+package tcp_test
 
 import (
 	"fmt"
+	"gosocket/config"
+	"gosocket/data"
 	"net"
+	"time"
 
 	"github.com/jinzhu/copier"
 )
+
+var BUFFER_SIZE int = 2048
 
 type (
 	OptFunc func(*TCPServer)
@@ -22,14 +27,15 @@ type TCPServer struct {
 }
 
 func DefaultServer() (*TCPServer, error) {
-	server_config, err := GetConfig("server")
+	server_config, err := config.GetConfig("server.connection")
+	BUFFER_SIZE = config.YMLConfig.Server.Socket.BufferSize
 	if err != nil {
 		panic(err)
 	}
-	opt := TCPOpt{}
-	copier.Copy(&opt, server_config)
+	tcpopt := TCPOpt{}
+	copier.Copy(&tcpopt, server_config)
 	return &TCPServer{
-		TCPOpt:   opt,
+		TCPOpt:   tcpopt,
 		QuitChan: make(chan struct{}),
 	}, nil
 }
@@ -44,6 +50,7 @@ func NewServer(funcs ...OptFunc) (*TCPServer, error) {
 	}
 
 	fmt.Printf("%+v\n", server)
+	fmt.Printf("buffer size: %d", BUFFER_SIZE)
 	return server, nil
 }
 
@@ -75,10 +82,16 @@ func (s *TCPServer) loopAccept() {
 
 func readBuf(conn net.Conn) {
 	defer conn.Close()
-	buf := make([]byte, 2048)
-	read, err := conn.Read(buf)
-	if err != nil {
-		fmt.Printf("!!!ReadBuf Error: %s", err)
-		return
+	conn.SetDeadline(time.Now().Add(time.Second * 10))
+	bufchan := make(chan []byte)
+	buf := make([]byte, BUFFER_SIZE)
+	go data.ParseSocketData(bufchan)
+	for {
+		read, err := conn.Read(buf)
+		if err != nil {
+			return
+		}
+		fmt.Println(buf)
+		bufchan <- buf[:read]
 	}
 }

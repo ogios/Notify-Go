@@ -1,3 +1,6 @@
 server:
-  network: "tcp"
-  address: ":9977"
+  connection:
+    network: "tcp"
+    address: ":9977"
+  socket:
+    buffer_size: 2048

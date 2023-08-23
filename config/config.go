@@ -1,4 +1,4 @@
-package tcpt_test
+package config
 
 import (
 	"fmt"
@@ -11,8 +11,14 @@ import (
 
 type Config struct {
 	Server struct {
-		Network string `yaml:"network"`
-		Address string `yaml:"address"`
+		Connection struct {
+			Network string `yaml:"network"`
+			Address string `yaml:"address"`
+		} `yaml:"connection"`
+
+		Socket struct {
+			BufferSize int `yaml:"buffer_size"`
+		} `yaml:"socket"`
 	} `yaml:"server"`
 }
 

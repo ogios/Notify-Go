@@ -1,13 +1,25 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
-
-	tcp_test "gosocket/tcp_test"
+	"gosocket/config"
+	"gosocket/tcp_test"
 )
 
+func test() {
+	c := int32(4)
+	// buf := []byte{}
+	buf := bytes.NewBuffer([]byte{})
+	binary.Write(buf, binary.BigEndian, c)
+
+	fmt.Println(buf.Bytes())
+}
+
 func main() {
-	tcp_test.UnmarshalConfig()
+	// test()
+	config.UnmarshalConfig()
 	server, err := tcp_test.NewServer()
 	if err != nil {
 		panic(err)
