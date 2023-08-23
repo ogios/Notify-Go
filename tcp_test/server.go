@@ -81,6 +81,7 @@ func (s *TCPServer) loopAccept() {
 }
 
 func readBuf(conn net.Conn) {
+	defer fmt.Printf("remote closed: %d", conn.RemoteAddr())
 	defer conn.Close()
 	conn.SetDeadline(time.Now().Add(time.Second * 10))
 	bufchan := make(chan []byte)
