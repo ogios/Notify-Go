@@ -2,6 +2,8 @@ package data
 
 import (
 	"fmt"
+	"math"
+
 	"gosocket/config"
 )
 
@@ -19,7 +21,16 @@ type NotificationRaw struct {
 	currentBuf []byte
 }
 
+func byteToInt32(bytes []byte) int32 {
+	var length int32 = 0
+	for ind, byte := range bytes {
+		length += (int32(byte) * int32(math.Pow(255, float64(len(bytes)-1-ind))))
+	}
+	return length
+}
+
 func ParseSocketData(SocketData chan []byte) {
+	item := Notification{}
 	itemRaw := NotificationRaw{
 		data:       SocketData,
 		step:       0,
@@ -27,9 +38,55 @@ func ParseSocketData(SocketData chan []byte) {
 		left:       0,
 		currentBuf: []byte{},
 	}
-	num := itemRaw.read(4)
-	fmt.Println(num)
-	// itemRaw.next()
+
+	// 标题
+	err := itemRaw.next(func(bytes []byte) {
+		item.Title = string(bytes)
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// 内容
+	err = itemRaw.next(func(bytes []byte) {
+		item.Content = string(bytes)
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// 图标
+	err = itemRaw.next(func(bytes []byte) {
+		item.Content = string(bytes)
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (n *NotificationRaw) next(fun func(bytes []byte)) error {
+	var num []byte
+	var length int32
+	num = n.read(4)
+	length = byteToInt32(num)
+	if length > 0 {
+		fmt.Println(num)
+		fmt.Printf("\n字段长度: %d\n", length)
+		// 分隔
+		num = n.read(1)
+		fmt.Println("字段分隔: ", num)
+		// 内容
+		num = n.read(length)
+		content := string(num)
+		fmt.Printf("字段内容: %s\n", content)
+		// 分隔
+		num = n.read(2)
+		fmt.Println("下一字段分隔: ", num)
+
+		fun(num)
+		return nil
+	}
+	return fmt.Errorf("%s", "no buf to read")
 }
 
 func (n *NotificationRaw) read(length int32) []byte {
@@ -48,20 +105,3 @@ func (n *NotificationRaw) read(length int32) []byte {
 	}
 	return total
 }
-
-// func (n *NotificationRaw) next() {
-// 	current := 0
-// 	num := make([]byte, 4)
-//
-// 	for {
-// 		temp := n.data[current]
-// 		current++
-//
-// 		if string([]byte{temp}) == "\n" {
-// 			break
-// 		} else {
-// 			num = append(num, temp)
-// 		}
-// 		fmt.Printf("%d", num)
-// 	}
-// }
