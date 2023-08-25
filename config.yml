@@ -4,3 +4,6 @@ server:
     address: ":9977"
   socket:
     buffer_size: 2048
+
+tempfile:
+  name: "android-notify-*"

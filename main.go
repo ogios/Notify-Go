@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+
 	"gosocket/config"
+	"gosocket/data"
 	"gosocket/tcp_test"
 )
 
@@ -20,6 +22,11 @@ func test() {
 func main() {
 	// test()
 	config.UnmarshalConfig()
+	err := data.CreateTempDir()
+	defer data.RemoveTempDir()
+	if err != nil {
+		panic(err)
+	}
 	server, err := tcp_test.NewServer()
 	if err != nil {
 		panic(err)

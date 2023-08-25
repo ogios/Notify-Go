@@ -20,6 +20,10 @@ type Config struct {
 			BufferSize int `yaml:"buffer_size"`
 		} `yaml:"socket"`
 	} `yaml:"server"`
+
+	Tempfile struct {
+		Name string `yaml:"name"`
+	} `yaml:"tempfile"`
 }
 
 var YMLConfig Config = Config{}
