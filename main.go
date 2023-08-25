@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"gosocket/config"
-	"gosocket/data"
+	_ "gosocket/notify"
 	"gosocket/tcp_test"
+	"gosocket/util"
 )
 
 func test() {
@@ -21,9 +21,9 @@ func test() {
 
 func main() {
 	// test()
-	config.UnmarshalConfig()
-	err := data.CreateTempDir()
-	defer data.RemoveTempDir()
+	util.UnmarshalConfig()
+	err := util.CreateTempDir()
+	defer util.RemoveTempDir()
 	if err != nil {
 		panic(err)
 	}

@@ -4,14 +4,9 @@ import (
 	"fmt"
 	"math"
 
-	"gosocket/config"
+	. "gosocket/notify"
+	"gosocket/util"
 )
-
-type Notification struct {
-	Title    string
-	Content  string
-	IconPath string
-}
 
 type NotificationRaw struct {
 	data       chan []byte
@@ -34,13 +29,22 @@ func ParseSocketData(SocketData chan []byte) {
 	itemRaw := NotificationRaw{
 		data:       SocketData,
 		step:       0,
-		size:       config.YMLConfig.Server.Socket.BufferSize,
+		size:       util.YMLConfig.Server.Socket.BufferSize,
 		left:       0,
 		currentBuf: []byte{},
 	}
 
-	// 标题
+	// 包名
 	err := itemRaw.next(func(bytes []byte) error {
+		item.AppID = string(bytes)
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// 标题
+	err = itemRaw.next(func(bytes []byte) error {
 		item.Title = string(bytes)
 		return nil
 	})
@@ -58,14 +62,15 @@ func ParseSocketData(SocketData chan []byte) {
 	}
 
 	// 图标
-	err = itemRaw.next(func(bytes []byte) error {
-		path, WriteFileErr := WriteTempFile(bytes)
+	_ = itemRaw.next(func(bytes []byte) error {
+		path, WriteFileErr := util.WriteTempFile(bytes, "png")
 		if WriteFileErr != nil {
 			return WriteFileErr
 		}
 		item.IconPath = path
 		return nil
 	})
+	err = System.Notify(item)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -85,8 +90,6 @@ func (n *NotificationRaw) next(fun func(bytes []byte) error) error {
 		fmt.Println("字段分隔: ", num)
 		// 内容
 		num = n.read(length)
-		// content := string(num)
-		// fmt.Printf("字段内容: %s\n", content)
 		// 分隔
 		fmt.Println("下一字段分隔: ", n.read(2))
 
@@ -108,7 +111,6 @@ func (n *NotificationRaw) read(length int32) []byte {
 			n.currentBuf = <-n.data
 			n.left = len(n.currentBuf)
 			n.step = 0
-			//fmt.Println("\n\nreceive: ", len(n.currentBuf), "\n", n.currentBuf)
 		} else {
 			total = append(total, n.currentBuf[n.step:n.step+int(length)]...)
 			n.step = n.step + int(length)

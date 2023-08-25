@@ -2,11 +2,10 @@ package tcp_test
 
 import (
 	"fmt"
+	"gosocket/util"
 	"net"
-	"sync"
 	"time"
 
-	"gosocket/config"
 	"gosocket/data"
 
 	"github.com/jinzhu/copier"
@@ -29,8 +28,8 @@ type TCPServer struct {
 }
 
 func DefaultServer() (*TCPServer, error) {
-	server_config, err := config.GetConfig("server.connection")
-	BUFFER_SIZE = config.YMLConfig.Server.Socket.BufferSize
+	server_config, err := util.GetConfig("server.connection")
+	BUFFER_SIZE = util.YMLConfig.Server.Socket.BufferSize
 	if err != nil {
 		panic(err)
 	}
@@ -82,12 +81,6 @@ func (s *TCPServer) loopAccept() {
 	}
 }
 
-var bufPool sync.Pool = sync.Pool{
-	New: func() interface{} {
-		return make([]byte, BUFFER_SIZE)
-	},
-}
-
 func readBuf(conn net.Conn) {
 	defer fmt.Printf("remote closed: %d", conn.RemoteAddr())
 	defer conn.Close()
@@ -101,10 +94,7 @@ func readBuf(conn net.Conn) {
 			return
 		}
 		temp := make([]byte, read)
-		//temp := bufPool.Get().([]byte)
 		copy(temp, buf)
-		//fmt.Println("\n\nread: ", len(temp[:read]), "\n", temp[:read])
 		bufchan <- temp
-		//bufPool.Put(temp)
 	}
 }

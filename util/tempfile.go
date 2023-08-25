@@ -1,18 +1,16 @@
-package data
+package util
 
 import (
 	"fmt"
 	"os"
 
 	"github.com/google/uuid"
-
-	"gosocket/config"
 )
 
 var tempdir string
 
 func CreateTempDir() error {
-	dir, err := os.MkdirTemp("", config.YMLConfig.Tempfile.Name)
+	dir, err := os.MkdirTemp("", YMLConfig.Tempfile.Name)
 	if err != nil {
 		return err
 	}
@@ -29,12 +27,12 @@ func RemoveTempDir() {
 	}
 }
 
-func WriteTempFile(bytes []byte) (string, error) {
+func WriteTempFile(bytes []byte, suffix string) (string, error) {
 	id2, UUIDErr := uuid.NewRandom()
 	if UUIDErr != nil {
 		return "", UUIDErr
 	}
-	file, TempFileErr := os.CreateTemp(tempdir, id2.String()+"*.png")
+	file, TempFileErr := os.CreateTemp(tempdir, id2.String()+"*."+suffix)
 	defer file.Close()
 	if TempFileErr != nil {
 		return "", TempFileErr
