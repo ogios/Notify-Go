@@ -20,9 +20,11 @@ jobs:
 
     - name: "[linux] setup go env"
       run: |
+        go env set GO111MODULE=on
         go env set CGO_ENABLED=0
         go env set GOARCH=amd64
         go env set GOOS=linux
+        go env
     - name: "[linux] Build and Compress executable"
       run: |
         curl -L  https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-amd64_linux.tar.xz -o upx.tar.xz
