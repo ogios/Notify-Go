@@ -1,13 +1,15 @@
+//go:build windows
+// +build windows
+
 package notify
 
 import (
 	"bytes"
+	"gosocket/util"
 	"os"
 	"os/exec"
 	"syscall"
 	"text/template"
-
-	"gosocket/util"
 )
 
 type Windows struct{}
