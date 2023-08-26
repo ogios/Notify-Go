@@ -20,10 +20,10 @@ jobs:
 
     - name: "[linux] setup go env"
       run: |
-        go env set GO111MODULE=on
-        go env set CGO_ENABLED=0
-        go env set GOARCH=amd64
-        go env set GOOS=linux
+        go env -w GO111MODULE=on
+        go env -w CGO_ENABLED=0
+        go env -w GOARCH=amd64
+        go env -w GOOS=linux
         go env
     - name: "[linux] Build and Compress executable"
       run: |
