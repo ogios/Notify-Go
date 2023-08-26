@@ -1,0 +1,66 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: "[linux] setup go env"
+      run: |
+        go env set CGO_ENABLED=0
+        go env set GOARCH=amd64
+        go env set GOOS=linux
+    - name: "[linux] Build and Compress executable"
+      run: |
+        curl -L  https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-amd64_linux.tar.xz -o upx.tar.xz
+        tar -xvf upx.tar.xz
+        go build -ldflags "-s -w" -v ./... -o Notify-Go
+        ./upx-4.1.0-amd64_linux/upx -9 ./Notify-go -O Notify-Go_upx
+    - name: Compress to gzip
+      run: |
+        tar -zcvf ../Notify-Go_amd64-linux.tar.gz .
+
+
+    - name: "[windows] setup go env"
+      run: |
+        go env set GOOS=windows
+    - name: "[windows] Build and Compress executable"
+      run: |
+        go build -ldflags "-s -w" -v ./... -o Notify-Go.exe
+        ./upx-4.1.0-amd64_linux/upx -9 ./Notify-go.exe -O Notify-Go_upx.exe
+    - name: Install zip
+      uses: montudor/action-zip@v1
+    - name: Compress to zip
+      run: |
+        zip -qq -r ../Notify-Go_amd64-windows.zip .
+        
+
+    - name: Test
+      run: go test -v ./...
+
+      
+    - name: Create Release and Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: "0.1"
+        name: Release 0.1
+        body: TODO New Release.
+        draft: false
+        prerelease: false
+        token: ${{ secrets.RELEASE_TOEKN }}
+        files: |
+          ../Notify-Go_amd64-linux.tar.gz
+          ../Notify-Go_amd64-windows.zip
