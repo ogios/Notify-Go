@@ -1,10 +1,11 @@
 //go:build windows
 // +build windows
 
-package notify
+package fac
 
 import (
 	"bytes"
+	"gosocket/app"
 	"gosocket/util"
 	"os"
 	"os/exec"
@@ -13,6 +14,10 @@ import (
 )
 
 type Windows struct{}
+
+func GetSystem() app.System {
+	return &Windows{}
+}
 
 var ToastTemplate *template.Template
 

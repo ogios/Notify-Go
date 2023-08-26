@@ -2,28 +2,22 @@ package notify
 
 import (
 	"fmt"
+	"gosocket/notify/fac"
 	"runtime"
+
+	. "gosocket/app"
 )
 
-type Notification struct {
-	AppID    string
-	Title    string
-	Content  string
-	IconPath string
-}
-
-// type System
-var System interface {
+var system interface {
 	Notify(item Notification) error
 }
 
 func init() {
 	sys := runtime.GOOS
 	fmt.Println("System: ", sys)
-	switch sys {
-	case "windows":
-		System = &Windows{}
-	case "linux":
-		System = &Linux{}
-	}
+	system = fac.GetSystem()
+}
+
+func Notify(item Notification) error {
+	return system.Notify(item)
 }

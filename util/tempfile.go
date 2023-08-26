@@ -33,10 +33,10 @@ func WriteTempFile(bytes []byte, suffix string) (string, error) {
 		return "", UUIDErr
 	}
 	file, TempFileErr := os.CreateTemp(tempdir, id2.String()+"*."+suffix)
-	defer file.Close()
 	if TempFileErr != nil {
 		return "", TempFileErr
 	}
+	defer file.Close()
 
 	c, FileWriteErr := file.Write(bytes)
 	if FileWriteErr != nil {

@@ -2,10 +2,11 @@ package data
 
 import (
 	"fmt"
+	"gosocket/notify"
+	"gosocket/util"
 	"math"
 
-	. "gosocket/notify"
-	"gosocket/util"
+	. "gosocket/app"
 )
 
 type NotificationRaw struct {
@@ -70,7 +71,7 @@ func ParseSocketData(SocketData chan []byte) {
 		item.IconPath = path
 		return nil
 	})
-	err = System.Notify(item)
+	err = notify.Notify(item)
 	if err != nil {
 		fmt.Println(err)
 	}
