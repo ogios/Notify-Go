@@ -47,10 +47,7 @@ func sendNotification(script []byte) error {
 
 func buildTemplate(item Notification) ([]byte, error) {
 	if ToastTemplate == nil {
-		err := initTemplate()
-		if err != nil {
-			return nil, err
-		}
+		initTemplate()
 	}
 	bytes := bytes.Buffer{}
 	bytes.Write([]byte{0xEF, 0xBB, 0xBF})
@@ -63,7 +60,7 @@ func buildTemplate(item Notification) ([]byte, error) {
 
 func initTemplate() {
 	ToastTemplate = template.New("toast")
-	str = `[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+	str := `[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
 [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
 [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 
