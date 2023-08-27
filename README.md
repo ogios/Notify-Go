@@ -8,3 +8,6 @@ socket体中包括:
 - 通知标题
 - 通知内容
 - 通知附带大图 (如没有则根据包名发送对应的应用图标)
+
+# 安卓
+地址：https://github.com/ogios/Notify-Android
