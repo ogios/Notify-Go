@@ -70,7 +70,7 @@ jobs:
         body: TODO New Release.
         draft: false
         prerelease: false
-        token: ${{ secrets.RELEASE_TOEKN }}
+        token: ${{ secrets.RELEASE_TOKEN }}
         files: |
           ../Notify-Go_amd64-linux.tar.gz
           ../Notify-Go_amd64-windows.zip
