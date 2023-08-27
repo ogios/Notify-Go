@@ -6,6 +6,7 @@ package fac
 import (
 	"bytes"
 	"gosocket/app"
+	. "gosocket/app"
 	"gosocket/util"
 	"os"
 	"os/exec"
