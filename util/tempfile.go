@@ -2,9 +2,9 @@ package util
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
-
-	"github.com/google/uuid"
+	"strconv"
 )
 
 var tempdir string
@@ -27,12 +27,8 @@ func RemoveTempDir() {
 	}
 }
 
-func WriteTempFile(bytes []byte, suffix string) (string, error) {
-	id2, UUIDErr := uuid.NewRandom()
-	if UUIDErr != nil {
-		return "", UUIDErr
-	}
-	file, TempFileErr := os.CreateTemp(tempdir, id2.String()+"*."+suffix)
+func WriteTempFile(bytes []byte, prefix string, suffix string) (string, error) {
+	file, TempFileErr := os.CreateTemp(tempdir, prefix+getRandom()+"*."+suffix)
 	if TempFileErr != nil {
 		return "", TempFileErr
 	}
@@ -44,4 +40,12 @@ func WriteTempFile(bytes []byte, suffix string) (string, error) {
 	}
 	fmt.Println("Write file: ", c)
 	return file.Name(), nil
+}
+
+func getRandom() string {
+	str := ""
+	for i := 0; i < 5; i++ {
+		str += strconv.Itoa(rand.Intn(100))
+	}
+	return str
 }

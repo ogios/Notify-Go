@@ -1,34 +1,45 @@
 package util
 
-import (
-	"fmt"
-	"os"
-	"reflect"
-	"strings"
-
-	"gopkg.in/yaml.v3"
-)
-
-type Config struct {
-	Server struct {
-		Connection struct {
-			Network string `yaml:"network"`
-			Address string `yaml:"address"`
-		} `yaml:"connection"`
-
-		Socket struct {
-			BufferSize int `yaml:"buffer_size"`
-		} `yaml:"socket"`
-	} `yaml:"server"`
-
-	Tempfile struct {
-		Name string `yaml:"name"`
-	} `yaml:"tempfile"`
+type ConnectionOpt struct {
+	Network string
+	Address string
 }
 
-var YMLConfig Config = Config{}
+type SocketOpt struct {
+	BufferSize int
+}
 
-func UnmarshalConfig() {
+type ServerOpt struct {
+	Connection ConnectionOpt
+	Socket     SocketOpt
+}
+
+type TempfileOpt struct {
+	Name string
+}
+
+type Config struct {
+	Server   ServerOpt
+	Tempfile TempfileOpt
+}
+
+var YMLConfig Config = Config{
+	Server: ServerOpt{
+		Connection: ConnectionOpt{
+			Network: "tcp",
+			Address: ":9977",
+		},
+		Socket: SocketOpt{
+			BufferSize: 2048,
+		},
+	},
+
+	Tempfile: TempfileOpt{
+		Name: "android-notify-*",
+	},
+}
+
+/* func UnmarshalConfig() {
 	// read file
 	path, _ := os.Getwd()
 	ymlb, err := os.ReadFile(path + "/config.yml")
@@ -96,4 +107,4 @@ func getFieldByTag(s interface{}, tag string) (interface{}, error) {
 
 func GetConfig(path string) (interface{}, error) {
 	return getFieldByTag(YMLConfig, path)
-}
+} */

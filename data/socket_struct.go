@@ -64,7 +64,7 @@ func ParseSocketData(SocketData chan []byte) {
 
 	// 图标
 	_ = itemRaw.next(func(bytes []byte) error {
-		path, WriteFileErr := util.WriteTempFile(bytes, "png")
+		path, WriteFileErr := util.WriteTempFile(bytes, item.AppID, "png")
 		if WriteFileErr != nil {
 			return WriteFileErr
 		}

@@ -7,45 +7,30 @@ import (
 	"time"
 
 	"gosocket/data"
-
-	"github.com/jinzhu/copier"
 )
 
 var BUFFER_SIZE int = 2048
 
 type (
 	OptFunc func(*TCPServer)
-	TCPOpt  struct {
-		Network string `yaml:"network"`
-		Address string `yaml:"address"`
-	}
 )
 
 type TCPServer struct {
 	QuitChan chan struct{}
 	Listener net.Listener
-	TCPOpt
+	TCPOpt   util.ServerOpt
 }
 
-func DefaultServer() (*TCPServer, error) {
-	server_config, err := util.GetConfig("server.connection")
+func DefaultServer() *TCPServer {
 	BUFFER_SIZE = util.YMLConfig.Server.Socket.BufferSize
-	if err != nil {
-		panic(err)
-	}
-	tcpopt := TCPOpt{}
-	copier.Copy(&tcpopt, server_config)
 	return &TCPServer{
-		TCPOpt:   tcpopt,
+		TCPOpt:   util.YMLConfig.Server,
 		QuitChan: make(chan struct{}),
-	}, nil
+	}
 }
 
 func NewServer(funcs ...OptFunc) (*TCPServer, error) {
-	server, err := DefaultServer()
-	if err != nil {
-		return nil, err
-	}
+	server := DefaultServer()
 	for _, fn := range funcs {
 		fn(server)
 	}
@@ -56,7 +41,7 @@ func NewServer(funcs ...OptFunc) (*TCPServer, error) {
 }
 
 func (s *TCPServer) Start() error {
-	ln, err := net.Listen("tcp", s.Address)
+	ln, err := net.Listen("tcp", s.TCPOpt.Connection.Address)
 	if err != nil {
 		return err
 	}

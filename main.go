@@ -21,7 +21,6 @@ func test() {
 
 func main() {
 	// test()
-	util.UnmarshalConfig()
 	err := util.CreateTempDir()
 	defer util.RemoveTempDir()
 	if err != nil {
@@ -31,6 +30,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("start listening on " + server.Address)
+	fmt.Println("start listening on " + server.TCPOpt.Connection.Address)
 	server.Start()
 }

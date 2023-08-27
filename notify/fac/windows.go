@@ -8,7 +8,6 @@ import (
 	"gosocket/app"
 	. "gosocket/app"
 	"gosocket/util"
-	"os"
 	"os/exec"
 	"syscall"
 	"text/template"
@@ -34,7 +33,7 @@ func (n *Windows) Notify(item Notification) error {
 }
 
 func sendNotification(script []byte) error {
-	path, err := util.WriteTempFile(script, "ps1")
+	path, err := util.WriteTempFile(script, "powershell", "ps1")
 	if err != nil {
 		return err
 	}
@@ -62,13 +61,37 @@ func buildTemplate(item Notification) ([]byte, error) {
 	return bytes.Bytes(), nil
 }
 
-func initTemplate() error {
+func initTemplate() {
 	ToastTemplate = template.New("toast")
-	path, _ := os.Getwd()
-	bytes, err := os.ReadFile(path + "/NotifyBody.ps1")
-	if err != nil {
-		return err
-	}
-	ToastTemplate.Parse(string(bytes))
-	return nil
+	str = `[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+[Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+
+$APP_ID = '{{if .AppID}}{{.AppID}}{{else}}Windows App{{end}}'
+
+$template = @"
+<toast activationType="protocol" duration="short">
+    <visual>
+        <binding template="ToastGeneric">
+            {{if .IconPath}}
+            <image placement="appLogoOverride" src="{{.IconPath}}" />
+            {{end}}
+            {{if .Title}}
+            <text><![CDATA[{{.Title}}]]></text>
+            {{end}}
+            {{if .Content}}
+            <text><![CDATA[{{.Content}}]]></text>
+            {{end}}
+        </binding>
+    </visual>
+	<audio silent="true" />
+</toast>
+"@
+
+$xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+$xml.LoadXml($template)
+$toast = New-Object Windows.UI.Notifications.ToastNotification $xml
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($APP_ID).Show($toast)
+`
+	ToastTemplate.Parse(str)
 }
