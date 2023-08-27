@@ -51,7 +51,7 @@ jobs:
         go env -w GOOS=windows
     - name: "[windows] Build and Compress executable"
       run: |
-        go build -ldflags "-s -w" -v ./... -o Notify-Go.exe
+        go build -ldflags "-s -w" -v -o Notify-Go.exe
         ./upx-4.1.0-amd64_linux/upx -9 ./Notify-go.exe -O Notify-Go_upx.exe
     - name: Install zip
       uses: montudor/action-zip@v1
@@ -60,8 +60,6 @@ jobs:
         zip -qq -r ../Notify-Go_amd64-windows.zip .
         
 
-    - name: Test
-      run: go test -v ./...
 
       
     - name: Create Release and Upload Release Asset

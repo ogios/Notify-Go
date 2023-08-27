@@ -12,16 +12,14 @@ type Linux struct{}
 
 func (n *Linux) Notify(item app.Notification) error {
 	params := []string{
-		"--app-name=",
-		item.AppID,
+		"--app-name=" + item.AppID,
 		item.Title,
 		item.Content,
 	}
 	if len(item.IconPath) > 0 {
 		params = append(
 			[]string{
-				"--icon=",
-				item.IconPath,
+				"--icon=" + item.IconPath,
 			},
 			params...,
 		)
