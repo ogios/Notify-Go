@@ -40,7 +40,7 @@ jobs:
         curl -L  https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-amd64_linux.tar.xz -o upx.tar.xz
         tar -xvf upx.tar.xz
         go build -ldflags "-s -w" -v -o Notify-Go
-        ./upx-4.1.0-amd64_linux/upx -9 ./Notify-go -o Notify-Go_upx
+        ./upx-4.1.0-amd64_linux/upx -9 ./Notify-Go -o Notify-Go_upx
     - name: Compress to gzip
       run: |
         tar -zcvf ../Notify-Go_amd64-linux.tar.gz .
@@ -52,7 +52,7 @@ jobs:
     - name: "[windows] Build and Compress executable"
       run: |
         go build -ldflags "-s -w" -v -o Notify-Go.exe
-        ./upx-4.1.0-amd64_linux/upx -9 ./Notify-go.exe -o Notify-Go_upx.exe
+        ./upx-4.1.0-amd64_linux/upx -9 ./Notify-Go.exe -o Notify-Go_upx.exe
     - name: Install zip
       uses: montudor/action-zip@v1
     - name: Compress to zip
