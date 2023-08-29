@@ -75,6 +75,7 @@ func ParseSocketData(SocketData chan []byte) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	close(SocketData)
 	fmt.Println("done")
 }
 
