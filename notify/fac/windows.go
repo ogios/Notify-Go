@@ -5,6 +5,7 @@ package fac
 
 import (
 	"bytes"
+	"fmt"
 	"gosocket/app"
 	. "gosocket/app"
 	"gosocket/util"
@@ -21,28 +22,24 @@ func GetSystem() app.System {
 
 var ToastTemplate *template.Template
 
-func (n *Windows) Notify(item Notification) error {
+func (n *Windows) Notify(item Notification) (string, error) {
 	script, err := buildTemplate(item)
 	if err != nil {
-		return err
+		return "", err
 	}
-	if err := sendNotification(script); err != nil {
-		return err
-	}
-	return nil
+	return sendNotification(script)
 }
 
-func sendNotification(script []byte) error {
+func sendNotification(script []byte) (string, error) {
 	path, err := util.WriteTempFile(script, "powershell", "ps1")
 	if err != nil {
-		return err
+		return "", err
 	}
 	cmd := exec.Command("PowerShell", "-ExecutionPolicy", "Bypass", "-File", path)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
+	fmt.Println(cmd.Args)
+	output, err := cmd.Output()
+	return string(output), err
 }
 
 func buildTemplate(item Notification) ([]byte, error) {

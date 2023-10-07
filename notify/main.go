@@ -8,9 +8,7 @@ import (
 	. "gosocket/app"
 )
 
-var system interface {
-	Notify(item Notification) error
-}
+var system System
 
 func init() {
 	sys := runtime.GOOS
@@ -18,6 +16,6 @@ func init() {
 	system = fac.GetSystem()
 }
 
-func Notify(item Notification) error {
+func Notify(item Notification) (string, error) {
 	return system.Notify(item)
 }

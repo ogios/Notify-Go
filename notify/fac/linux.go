@@ -4,13 +4,15 @@
 package fac
 
 import (
-	"gosocket/app"
+	"fmt"
 	"os/exec"
+
+	"gosocket/app"
 )
 
 type Linux struct{}
 
-func (n *Linux) Notify(item app.Notification) error {
+func (n *Linux) Notify(item app.Notification) (string, error) {
 	params := []string{
 		"--app-name=" + item.AppID,
 		item.Title,
@@ -25,10 +27,9 @@ func (n *Linux) Notify(item app.Notification) error {
 		)
 	}
 	cmd := exec.Command("notify-send", params...)
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
+	fmt.Println(cmd.Args)
+	output, err := cmd.Output()
+	return string(output), err
 }
 
 func GetSystem() app.System {

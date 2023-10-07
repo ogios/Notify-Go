@@ -8,5 +8,5 @@ type Notification struct {
 }
 
 type System interface {
-	Notify(item Notification) error
+	Notify(item Notification) (string, error)
 }

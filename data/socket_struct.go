@@ -71,7 +71,8 @@ func ParseSocketData(SocketData chan []byte) {
 		item.IconPath = path
 		return nil
 	})
-	err = notify.Notify(item)
+	output, err := notify.Notify(item)
+	fmt.Println("output:", output)
 	if err != nil {
 		fmt.Println(err)
 	}
