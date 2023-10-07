@@ -2,123 +2,122 @@ package data
 
 import (
 	"fmt"
+
 	"gosocket/notify"
 	"gosocket/util"
-	"math"
+
+	"github.com/ogios/sutils"
+	"golang.org/x/exp/slog"
 
 	. "gosocket/app"
 )
 
-type NotificationRaw struct {
-	data       chan []byte
-	step       int
-	left       int
-	size       int
-	currentBuf []byte
+type NoIn struct {
+	Si   *sutils.SBodyIN
+	Item *Notification
 }
 
-func byteToInt32(bytes []byte) int32 {
-	var length int32 = 0
-	for ind, byte := range bytes {
-		length += (int32(byte) * int32(math.Pow(255, float64(len(bytes)-1-ind))))
+func (n *NoIn) i() {
+	if n.Item == nil {
+		n.Item = new(Notification)
 	}
-	return length
 }
 
-func ParseSocketData(SocketData chan []byte) {
-	item := Notification{}
-	itemRaw := NotificationRaw{
-		data:       SocketData,
-		step:       0,
-		size:       util.YMLConfig.Server.Socket.BufferSize,
-		left:       0,
-		currentBuf: []byte{},
-	}
-
-	// 包名
-	err := itemRaw.next(func(bytes []byte) error {
-		item.AppID = string(bytes)
-		return nil
-	})
+func (n *NoIn) AppID() error {
+	n.i()
+	length, err := n.Si.Next()
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
-
-	// 标题
-	err = itemRaw.next(func(bytes []byte) error {
-		item.Title = string(bytes)
-		return nil
-	})
+	if length > 255 {
+		return fmt.Errorf("package name too long: %d", length)
+	}
+	name, err := n.Si.GetSec()
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
-
-	// 内容
-	err = itemRaw.next(func(bytes []byte) error {
-		item.Content = string(bytes)
-		return nil
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// 图标
-	_ = itemRaw.next(func(bytes []byte) error {
-		path, WriteFileErr := util.WriteTempFile(bytes, item.AppID, "png")
-		if WriteFileErr != nil {
-			return WriteFileErr
-		}
-		item.IconPath = path
-		return nil
-	})
-	output, err := notify.Notify(item)
-	fmt.Println("output:", output)
-	if err != nil {
-		fmt.Println(err)
-	}
-	close(SocketData)
-	fmt.Println("done")
+	n.Item.AppID = string(name)
+	return nil
 }
 
-func (n *NotificationRaw) next(fun func(bytes []byte) error) error {
-	var num []byte
-	var length int32
-	num = n.read(4)
-	length = byteToInt32(num)
-	if length > 0 {
-		fmt.Println(num)
-		fmt.Printf("\n字段长度: %d\n", length)
-		// 分隔
-		num = n.read(1)
-		fmt.Println("字段分隔: ", num)
-		// 内容
-		num = n.read(length)
-		// 分隔
-		fmt.Println("下一字段分隔: ", n.read(2))
+func (n *NoIn) Title() error {
+	n.i()
+	length, err := n.Si.Next()
+	if err != nil {
+		return err
+	}
+	if length > 1024*4 {
+		return fmt.Errorf("title too long: %d", length)
+	}
+	title, err := n.Si.GetSec()
+	if err != nil {
+		return err
+	}
+	n.Item.Title = string(title)
+	return nil
+}
 
-		err := fun(num)
+func (n *NoIn) Content() error {
+	n.i()
+	_, err := n.Si.Next()
+	if err != nil {
+		return err
+	}
+	content, err := n.Si.GetSec()
+	if err != nil {
+		return err
+	}
+	n.Item.Title = string(content)
+	return nil
+}
+
+func (n *NoIn) Pic() error {
+	f, err := util.GetTempFile(n.Item.AppID, "png")
+	if err != nil {
+		return err
+	}
+	length, err := n.Si.Next()
+	if err != nil {
+		return err
+	}
+	buf := make([]byte, 1024)
+	for length > 0 {
+		read, err := n.Si.Read(buf)
 		if err != nil {
 			return err
 		}
-		return nil
+		f.Write(buf[:read])
+		length -= read
 	}
-	return fmt.Errorf("%s", "no buf to read")
+	n.Item.IconPath = f.Name()
+	return nil
 }
 
-func (n *NotificationRaw) read(length int32) []byte {
-	total := []byte{}
-	for length > 0 {
-		if length > int32(n.left) {
-			length = length - int32(len(n.currentBuf[n.step:]))
-			total = append(total, n.currentBuf[n.step:]...)
-			n.currentBuf = <-n.data
-			n.left = len(n.currentBuf)
-			n.step = 0
-		} else {
-			total = append(total, n.currentBuf[n.step:n.step+int(length)]...)
-			n.step = n.step + int(length)
-			return total
-		}
+func ParseSocketData(n *NoIn) error {
+	err := n.AppID()
+	if err != nil {
+		return err
 	}
-	return total
+	err = n.Title()
+	if err != nil {
+		return err
+	}
+	err = n.Content()
+	if err != nil {
+		return err
+	}
+	err = n.Pic()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func Notify(n *NoIn) error {
+	output, err := notify.Notify(*n.Item)
+	slog.Info(output, "type", "OUTPUT")
+	if err != nil {
+		return err
+	}
+	return nil
 }

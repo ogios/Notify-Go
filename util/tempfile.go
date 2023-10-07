@@ -42,6 +42,14 @@ func WriteTempFile(bytes []byte, prefix string, suffix string) (string, error) {
 	return file.Name(), nil
 }
 
+func GetTempFile(prefix string, suffix string) (*os.File, error) {
+	file, TempFileErr := os.CreateTemp(tempdir, prefix+getRandom()+"*."+suffix)
+	if TempFileErr != nil {
+		return nil, TempFileErr
+	}
+	return file, nil
+}
+
 func getRandom() string {
 	str := ""
 	for i := 0; i < 5; i++ {

@@ -20,6 +20,7 @@ func test() {
 }
 
 func main() {
+	SetupLog()
 	// test()
 	err := util.CreateTempDir()
 	defer util.RemoveTempDir()

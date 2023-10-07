@@ -1,12 +1,17 @@
 package tcp_test
 
 import (
+	"bufio"
 	"fmt"
-	"gosocket/util"
 	"net"
+	"runtime"
 	"time"
 
 	"gosocket/data"
+	"gosocket/util"
+
+	"github.com/ogios/sutils"
+	"golang.org/x/exp/slog"
 )
 
 var BUFFER_SIZE int = 2048
@@ -48,38 +53,49 @@ func (s *TCPServer) Start() error {
 	defer ln.Close()
 	s.Listener = ln
 
-	go s.loopAccept()
-	<-s.QuitChan
+	err = s.loopAccept()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (s *TCPServer) loopAccept() {
+func (s *TCPServer) loopAccept() error {
 	for {
 		conn, err := s.Listener.Accept()
 		if err != nil {
-			fmt.Printf("!!!Connection Accept Error: %s", err)
-			s.QuitChan <- struct{}{}
-			panic(err)
+			slog.Error(fmt.Sprintf("!!!Connection Accept Error: %s", err))
+			return err
 		}
 		fmt.Println(conn.RemoteAddr())
 		go readBuf(conn)
 	}
 }
 
-func readBuf(conn net.Conn) {
-	defer fmt.Printf("remote closed: %d", conn.RemoteAddr())
+func readBuf(conn net.Conn) (err error) {
+	defer runtime.GC()
+	defer slog.Info(fmt.Sprintf("remote closed: %d", conn.RemoteAddr()))
 	defer conn.Close()
-	conn.SetDeadline(time.Now().Add(time.Second * 10))
-	bufchan := make(chan []byte)
-	buf := make([]byte, BUFFER_SIZE)
-	go data.ParseSocketData(bufchan)
-	for {
-		read, err := conn.Read(buf)
+	defer func() {
 		if err != nil {
-			return
+			slog.Error(err.Error())
 		}
-		temp := make([]byte, read)
-		copy(temp, buf)
-		bufchan <- temp
+		if e := recover(); e != nil {
+			err = e.(error)
+			slog.Error(err.Error())
+		}
+	}()
+	conn.SetDeadline(time.Now().Add(time.Second * 10))
+	n := &data.NoIn{
+		Si: sutils.NewSBodyIn(bufio.NewReader(conn)),
 	}
+	err = data.ParseSocketData(n)
+	if err == nil {
+		err = data.Notify(n)
+		if err == nil {
+			err = n.Item.Clear()
+		}
+	}
+	n = nil
+	return err
 }
