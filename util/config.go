@@ -1,5 +1,10 @@
 package util
 
+import (
+	"flag"
+	"fmt"
+)
+
 type ConnectionOpt struct {
 	Network string
 	Address string
@@ -21,9 +26,11 @@ type TempfileOpt struct {
 type Config struct {
 	Server   ServerOpt
 	Tempfile TempfileOpt
+	Debug    bool
 }
 
-var YMLConfig Config = Config{
+var GlobalConfig Config = Config{
+	Debug: false,
 	Server: ServerOpt{
 		Connection: ConnectionOpt{
 			Network: "tcp",
@@ -33,10 +40,19 @@ var YMLConfig Config = Config{
 			BufferSize: 2048,
 		},
 	},
-
 	Tempfile: TempfileOpt{
 		Name: "android-notify-*",
 	},
+}
+
+func init() {
+	debug := flag.Bool("debug", false, "start with debug logging")
+	host := flag.String("h", "", "listen host, default empty string")
+	port := flag.String("p", "9977", "listen port, default 9977")
+	flag.Parse()
+	fmt.Println("Flag parsed: ", *debug, *host, *port)
+	GlobalConfig.Server.Connection.Address = (*host + ":" + *port)
+	GlobalConfig.Debug = *debug
 }
 
 /* func UnmarshalConfig() {

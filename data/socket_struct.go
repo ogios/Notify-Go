@@ -94,18 +94,22 @@ func (n *NoIn) Pic() error {
 }
 
 func ParseSocketData(n *NoIn) error {
+	slog.Debug("getting AppID")
 	err := n.AppID()
 	if err != nil {
 		return err
 	}
+	slog.Debug("getting Title")
 	err = n.Title()
 	if err != nil {
 		return err
 	}
+	slog.Debug("getting Content")
 	err = n.Content()
 	if err != nil {
 		return err
 	}
+	slog.Debug("getting Picture")
 	err = n.Pic()
 	if err != nil {
 		return err

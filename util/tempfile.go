@@ -10,7 +10,7 @@ import (
 var tempdir string
 
 func CreateTempDir() error {
-	dir, err := os.MkdirTemp("", YMLConfig.Tempfile.Name)
+	dir, err := os.MkdirTemp("", GlobalConfig.Tempfile.Name)
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"gosocket/data"
+	"gosocket/notify"
 	"gosocket/util"
 
 	"github.com/ogios/sutils"
@@ -27,9 +28,9 @@ type TCPServer struct {
 }
 
 func DefaultServer() *TCPServer {
-	BUFFER_SIZE = util.YMLConfig.Server.Socket.BufferSize
+	BUFFER_SIZE = util.GlobalConfig.Server.Socket.BufferSize
 	return &TCPServer{
-		TCPOpt:   util.YMLConfig.Server,
+		TCPOpt:   util.GlobalConfig.Server,
 		QuitChan: make(chan struct{}),
 	}
 }
@@ -72,30 +73,33 @@ func (s *TCPServer) loopAccept() error {
 	}
 }
 
-func readBuf(conn net.Conn) (err error) {
+func readBuf(conn net.Conn) {
 	defer runtime.GC()
 	defer slog.Info(fmt.Sprintf("remote closed: %d", conn.RemoteAddr()))
 	defer conn.Close()
 	defer func() {
-		if err != nil {
-			slog.Error(err.Error())
-		}
 		if e := recover(); e != nil {
-			err = e.(error)
-			slog.Error(err.Error())
+			s := fmt.Sprintf("%v", e)
+			slog.Error(s)
+			notify.NotifyRaw(s)
 		}
 	}()
 	conn.SetDeadline(time.Now().Add(time.Second * 10))
 	n := &data.NoIn{
 		Si: sutils.NewSBodyIn(bufio.NewReader(conn)),
 	}
-	err = data.ParseSocketData(n)
-	if err == nil {
-		err = data.Notify(n)
-		if err == nil {
-			err = n.Item.Clear()
-		}
+	slog.Debug("Start processing")
+	err := data.ParseSocketData(n)
+	if err != nil {
+		panic(err)
+	}
+	err = data.Notify(n)
+	if err != nil {
+		panic(err)
+	}
+	err = n.Item.Clear()
+	if err != nil {
+		panic(err)
 	}
 	n = nil
-	return err
 }

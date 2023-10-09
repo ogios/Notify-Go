@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	_ "gosocket/notify"
+	"gosocket/notify"
 	"gosocket/tcp_test"
 	"gosocket/util"
 )
@@ -21,6 +21,12 @@ func test() {
 
 func main() {
 	SetupLog()
+	s, e := notify.NotifyRaw("notify started")
+	fmt.Println(s)
+	if e != nil {
+		panic(e)
+	}
+
 	// test()
 	err := util.CreateTempDir()
 	defer util.RemoveTempDir()
