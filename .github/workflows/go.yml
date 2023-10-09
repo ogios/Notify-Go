@@ -65,9 +65,9 @@ jobs:
     - name: Create Release and Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: "0.1"
-        name: Release 0.1
-        body: TODO New Release.
+        tag_name: "v2"
+        name: Release v2
+        body: Receives notifications sended from your phone.
         draft: false
         prerelease: false
         token: ${{ secrets.RELEASE_TOKEN }}
