@@ -67,7 +67,7 @@ func (n *NoIn) Content() error {
 	if err != nil {
 		return err
 	}
-	n.Item.Title = string(content)
+	n.Item.Content = string(content)
 	return nil
 }
 
